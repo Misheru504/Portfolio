@@ -1,0 +1,10 @@
+---
+import type { Billet } from '../lib/content';
+import { formatDate } from '../lib/content';
+interface Props { billet: Billet; }
+const { billet } = Astro.props;
+---
+<li class="billet">
+  <time class="mono" datetime={billet.data.date.toISOString()}>{formatDate(billet.data.date, { day: '2-digit', month: 'short', year: 'numeric' })}</time>
+  <a href={`/devlog/${billet.id}/`}>{billet.data.title}</a>
+</li>

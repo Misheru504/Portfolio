@@ -1,0 +1,45 @@
+---
+/**
+ * Îlot HydroCarte : une carte MapLibre chargée seulement quand elle
+ * arrive à l'écran. Le reste du site reste 100 % statique.
+ *
+ * PAS ENCORE UTILISÉ. Pour l'afficher dans le bloc « En ce moment »
+ * (dans src/pages/index.astro) :
+ *
+ *   <MomentBlock projet={p}>
+ *     <HydroMap slot="visuel" />
+ *   </MomentBlock>
+ *
+ * Le code de la carte est dans src/lib/hydrocarte.ts : remplace-le
+ * par celui de ton projet HydroCarte.
+ */
+interface Props {
+  height?: string;
+}
+const { height = '420px' } = Astro.props;
+---
+<div class="hydro-map" data-hydro-map style={`height: ${height}`}>
+  <p class="hydro-map-attente mono">Chargement de la carte…</p>
+</div>
+
+<script>
+  // Ce script est regroupé et chargé une seule fois par page, même s'il y a plusieurs cartes.
+  const conteneurs = document.querySelectorAll<HTMLElement>('[data-hydro-map]');
+
+  const observer = new IntersectionObserver(async (entrees) => {
+    for (const entree of entrees) {
+      if (!entree.isIntersecting) continue;
+      observer.unobserve(entree.target);
+      // Import dynamique : MapLibre (~800 Ko) n'est téléchargé que maintenant.
+      const { initHydroCarte } = await import('../lib/hydrocarte');
+      await initHydroCarte(entree.target as HTMLElement);
+    }
+  }, { rootMargin: '200px' });
+
+  conteneurs.forEach((c) => observer.observe(c));
+</script>
+
+<style>
+  .hydro-map { position: relative; width: 100%; min-height: 280px; background: var(--surface); }
+  .hydro-map-attente { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; color: var(--muted); }
+</style>

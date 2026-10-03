@@ -1,0 +1,39 @@
+---
+import { render } from 'astro:content';
+import { Image } from 'astro:assets';
+import Base from '../../layouts/Base.astro';
+import TagList from '../../components/TagList.astro';
+import BilletItem from '../../components/BilletItem.astro';
+import { getProjets, getBillets, formatDate, type Projet } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const projets = await getProjets();
+  return projets.map((projet) => ({ params: { id: projet.id }, props: { projet } }));
+}
+
+const { projet } = Astro.props as { projet: Projet };
+const { Content } = await render(projet);
+const d = projet.data;
+const billets = (await getBillets()).filter((b) => b.data.projet?.id === projet.id);
+---
+<Base title={d.title} description={d.summary}>
+  <article class="section prose">
+    <p class="meta mono"><a href="/projets/">← Projets</a> · {d.context} · depuis {formatDate(d.date)} · {d.status}</p>
+    <h1>{d.title}</h1>
+    <p class="lead">{d.summary}</p>
+    <ul class="stack mono">{d.stack.map((s) => <li>{s}</li>)}</ul>
+    <p class="links">
+      {d.github && <a class="btn ghost" href={d.github}>Code source</a>}
+      {d.demo && <a class="btn" href={d.demo}>Démo</a>}
+    </p>
+    {d.cover && <Image src={d.cover} alt={d.coverAlt ?? ''} widths={[800, 1600]} sizes="(max-width: 900px) 100vw, 860px" />}
+    <Content />
+    <TagList tags={d.tags} />
+    {billets.length > 0 && (
+      <section>
+        <h2>Devlog du projet</h2>
+        <ul class="billets">{billets.map((b) => <BilletItem billet={b} />)}</ul>
+      </section>
+    )}
+  </article>
+</Base>

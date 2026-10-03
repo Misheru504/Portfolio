@@ -1,0 +1,19 @@
+---
+import { Image } from 'astro:assets';
+import type { Projet } from '../lib/content';
+import { formatDate } from '../lib/content';
+interface Props { projet: Projet; }
+const { projet } = Astro.props;
+const { title, summary, stack, status, context, date, cover, coverAlt } = projet.data;
+---
+<article class="card">
+  {cover && <Image src={cover} alt={coverAlt ?? ''} loading="eager" widths={[400, 800]} sizes="(max-width: 700px) 100vw, 400px" class="card-cover" />}
+  <div class="card-body">
+    <p class="meta mono">
+      <span>{context}</span> · <span>{formatDate(date)}</span> · <span class={`status status-${status.replace(' ', '-')}`}>{status}</span>
+    </p>
+    <h3><a href={`/projets/${projet.id}/`}>{title}</a></h3>
+    <p>{summary}</p>
+    <ul class="stack mono">{stack.slice(0, 5).map((s) => <li>{s}</li>)}</ul>
+  </div>
+</article>

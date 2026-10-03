@@ -1,0 +1,53 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import BilletItem from '../components/BilletItem.astro';
+import MomentBlock from '../components/MomentBlock.astro';
+// import HydroMap from '../components/HydroMap.astro'; // à décommenter quand HydroCarte sera prêt
+import { getFeatured, getBillets, getMoment } from '../lib/content';
+import { SITE } from '../data/site';
+import topo from '../assets/topo-europe.png';
+
+const featured = await getFeatured();
+const tousLesBillets = await getBillets();
+const billets = tousLesBillets.slice(0, 3);
+const moment = await getMoment();
+// Dernier billet de devlog de chaque projet du moment (ou undefined).
+const dernierBillet = (id: string) => tousLesBillets.find((b) => b.data.projet?.id === id);
+---
+<Base>
+  <section class="hero">
+    <Image src={topo} alt="" class="hero-bg" widths={[1000, 2000]} sizes="100vw" loading="eager" fetchpriority="high" />
+    <div class="hero-content">
+      <p class="mono kicker">{SITE.location} · 43.61°N 3.88°E</p>
+      <h1>Je code des cartes, des mondes et des outils&nbsp;utiles.</h1>
+      <p class="lead">{SITE.role}. J'aime les données géographiques, le rendu 3D, la génération procédurale et l'open source.</p>
+      <p class="cta"><a class="btn" href="/projets/">Voir les projets</a> <a class="btn ghost" href="/a-propos/">À propos</a></p>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Projets mis en avant</h2>
+    <div class="grid">{featured.map((p) => <ProjectCard projet={p} />)}</div>
+    <p><a href="/projets/">Tous les projets →</a></p>
+  </section>
+
+  {moment.length > 0 && (
+    <section class="section moments">
+      {moment.map((p) => <MomentBlock projet={p} dernierBillet={dernierBillet(p.id)} />)}
+
+      {/*
+        Exemple avec la carte HydroCarte à la place de l'image :
+        <MomentBlock projet={p} dernierBillet={dernierBillet(p.id)}>
+          <HydroMap slot="visuel" />
+        </MomentBlock>
+      */}
+    </section>
+  )}
+
+  <section class="section">
+    <h2>Devlog</h2>
+    <ul class="billets">{billets.map((b) => <BilletItem billet={b} />)}</ul>
+  </section>
+</Base>

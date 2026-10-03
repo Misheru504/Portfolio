@@ -1,0 +1,16 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { getProjets, getAllTags, slugify } from '../../lib/content';
+
+const projets = await getProjets();
+const tags = await getAllTags();
+---
+<Base title="Projets" description="Tous mes projets : web, SIG, 3D, infra.">
+  <section class="section">
+    <h1>Projets</h1>
+    <p class="lead">{projets.length} projets, du plus récent au plus ancien.</p>
+    <ul class="tags">{tags.map((t) => <li><a href={`/tags/${slugify(t)}/`}>#{t}</a></li>)}</ul>
+    <div class="grid">{projets.map((p) => <ProjectCard projet={p} />)}</div>
+  </section>
+</Base>

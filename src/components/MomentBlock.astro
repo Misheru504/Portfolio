@@ -1,0 +1,45 @@
+---
+/**
+ * Bloc « En ce moment » de l'accueil (piste A).
+ * Affiché pour chaque projet qui a `moment: true` dans son Markdown.
+ *
+ * Partie visuelle, par ordre de priorité :
+ *   1. ce que tu passes dans le slot « visuel » (ex. la carte HydroCarte) ;
+ *   2. sinon l'image `cover` du projet ;
+ *   3. sinon rien : le texte prend toute la largeur.
+ */
+import { Image } from 'astro:assets';
+import type { Projet, Billet } from '../lib/content';
+import { formatDate } from '../lib/content';
+
+interface Props {
+  projet: Projet;
+  dernierBillet?: Billet;
+}
+const { projet, dernierBillet } = Astro.props;
+const { title, summary, cover, coverAlt, stack } = projet.data;
+const aUnVisuel = Astro.slots.has('visuel') || !!cover;
+---
+<article class:list={['moment', { 'moment--texte': !aUnVisuel }]}>
+  <div class="moment-texte">
+    <p class="mono kicker">En ce moment</p>
+    <h2>{title}</h2>
+    <p>{summary}</p>
+    <ul class="stack mono">{stack.map((s) => <li>{s}</li>)}</ul>
+    <p class="moment-liens">
+      <a href={`/projets/${projet.id}/`}>Voir le projet →</a>
+      {dernierBillet && (
+        <a href={`/devlog/${dernierBillet.id}/`}>
+          Dernier billet · {formatDate(dernierBillet.data.date, { day: 'numeric', month: 'short' })}
+        </a>
+      )}
+    </p>
+  </div>
+  {aUnVisuel && (
+    <div class="moment-visuel">
+      {Astro.slots.has('visuel')
+        ? <slot name="visuel" />
+        : cover && <Image src={cover} alt={coverAlt ?? ''} widths={[600, 1200]} sizes="(max-width: 900px) 100vw, 600px" />}
+    </div>
+  )}
+</article>

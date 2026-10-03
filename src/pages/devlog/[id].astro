@@ -1,0 +1,26 @@
+---
+import { render, getEntry } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import TagList from '../../components/TagList.astro';
+import { getBillets, formatDate, type Billet } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const billets = await getBillets();
+  return billets.map((billet) => ({ params: { id: billet.id }, props: { billet } }));
+}
+
+const { billet } = Astro.props as { billet: Billet };
+const { Content } = await render(billet);
+const projet = billet.data.projet ? await getEntry(billet.data.projet) : undefined;
+---
+<Base title={billet.data.title}>
+  <article class="section prose">
+    <p class="meta mono">
+      <a href="/devlog/">← Devlog</a> · {formatDate(billet.data.date, { day: 'numeric', month: 'long', year: 'numeric' })}
+      {projet && <> · <a href={`/projets/${projet.id}/`}>{projet.data.title}</a></>}
+    </p>
+    <h1>{billet.data.title}</h1>
+    <Content />
+    <TagList tags={billet.data.tags} />
+  </article>
+</Base>

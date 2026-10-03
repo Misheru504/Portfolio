@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+---
+<Base title="À propos">
+  <article class="section prose">
+    <h1>À propos</h1>
+    <p class="lead">Étudiant en 2e année de BTS SIO à {SITE.location}.</p>
+    <p>
+      Je m'intéresse surtout aux systèmes d'information géographique, au rendu 3D, la génération procédurale et à la transmission :
+      à terme, j'aimerais travailler dans le SIG et enseigner.
+    </p>
+    <h2>Ce que j'utilise</h2>
+    <ul>
+      <li><strong>Langages :</strong> PHP, JavaScript, C#, SQL</li>
+      <li><strong>Web :</strong> WordPress (plugins sur mesure), Vite, Bootstrap, Astro</li>
+      <li><strong>Carto :</strong> MapLibre GL, GeoJSON, API Hub'Eau</li>
+      <li><strong>3D :</strong> OpenGL, GLSL, Silk.NET</li>
+      <li><strong>Infra :</strong> Ubuntu Server, Docker</li>
+      <li><strong>Outils :</strong> JetBrains, Visual Studio, VS Code, Git</li>
+    </ul>
+    <h2>Contact</h2>
+    <p><a href={`mailto:${SITE.email}`}>{SITE.email}</a> - <a href={SITE.links.github}>GitHub</a> - <a href={SITE.links.linkedin}>LinkedIn</a></p>
+  </article>
+</Base>

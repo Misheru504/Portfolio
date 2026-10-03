@@ -1,0 +1,69 @@
+# Déploie le site sur ton VPS à chaque push sur main.
+#
+# Ce que fait GitHub, dans l'ordre, sur une machine Ubuntu temporaire :
+#   1. récupère le code du dépôt ;
+#   2. installe Node et les dépendances ;
+#   3. compile le site (dossier dist/) ;
+#   4. l'envoie sur le VPS par SSH avec rsync.
+#
+# Configuration à faire une fois : voir docs/DEPLOIEMENT.md (secrets VPS_*).
+name: Déploiement VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # bouton « Run workflow » dans l'onglet Actions
+
+# Si deux pushs arrivent coup sur coup, on attend la fin du premier déploiement.
+concurrency:
+  group: deploiement
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Installer les dépendances
+        run: npm ci
+
+      - name: Compiler le site
+        run: npm run build
+
+      - name: Préparer la connexion SSH
+        env:
+          SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      - name: Envoyer sur le VPS
+        env:
+          HOST: ${{ secrets.VPS_HOST }}
+          PORT: ${{ secrets.VPS_PORT || '22' }}
+          USER: ${{ secrets.VPS_USER }}
+          DEST: ${{ secrets.VPS_PATH }}
+        run: |
+          # --delete : supprime sur le VPS les fichiers qui n'existent plus dans dist/
+          rsync -az --delete --stats \
+            -e "ssh -i ~/.ssh/deploy_key -p $PORT -o StrictHostKeyChecking=yes" \
+            dist/ "$USER@$HOST:$DEST/"
+
+      - name: Nettoyer la clé
+        if: always()
+        run: rm -f ~/.ssh/deploy_key

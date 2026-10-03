@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import BilletItem from '../../components/BilletItem.astro';
+import { getAllTags, getProjets, getBillets, slugify } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const tags = await getAllTags();
+  return tags.map((tag) => ({ params: { tag: slugify(tag) }, props: { tag } }));
+}
+
+const { tag } = Astro.props as { tag: string };
+const projets = (await getProjets()).filter((p) => p.data.tags.includes(tag));
+const billets = (await getBillets()).filter((b) => b.data.tags.includes(tag));
+---
+<Base title={`#${tag}`}>
+  <section class="section">
+    <h1>#{tag}</h1>
+    {projets.length > 0 && <div class="grid">{projets.map((p) => <ProjectCard projet={p} />)}</div>}
+    {billets.length > 0 && <><h2>Devlog</h2><ul class="billets">{billets.map((b) => <BilletItem billet={b} />)}</ul></>}
+  </section>
+</Base>

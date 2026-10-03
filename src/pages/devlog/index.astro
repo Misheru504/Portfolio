@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import BilletItem from '../../components/BilletItem.astro';
+import { getBillets } from '../../lib/content';
+const billets = await getBillets();
+---
+<Base title="Devlog" description="Journal de bord de mes projets.">
+  <section class="section">
+    <h1>Devlog</h1>
+    <p class="lead">Ce que j'essaie, ce qui casse et ce que j'apprends.</p>
+    <ul class="billets">{billets.map((b) => <BilletItem billet={b} />)}</ul>
+  </section>
+</Base>
